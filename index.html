@@ -68,7 +68,8 @@ header{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,#f6f2ff
 .chip{flex:none;height:36px;padding:0 14px;border-radius:18px;border:0;background:var(--blush);font-size:14px;font-weight:500;display:flex;align-items:center;gap:6px;white-space:nowrap;color:var(--ink)}
 .chip b{width:9px;height:9px;border-radius:50%}
 .chip.on{background:var(--cherry);color:#fff}
-main{padding-bottom:120px}
+main{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+#app::after{content:"";position:fixed;left:0;right:0;bottom:0;height:calc(110px + env(safe-area-inset-bottom,0px));background:linear-gradient(to bottom,rgba(252,250,255,0),#fcfaff 70%);pointer-events:none;z-index:5}
 .count{font-weight:700;font-size:15px;color:var(--soft);margin:14px 0 10px}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 @media(min-width:500px){.grid{gap:14px}}
@@ -227,7 +228,7 @@ select.field{appearance:none;-webkit-appearance:none;background:var(--card) url(
   </div></header>
   <main class="wrap" id="list"></main>
   <div class="pet" id="pet"><div class="say hide" id="petSay"></div><div class="panel hide" id="petPanel"></div><button class="petbody" id="petBody" aria-label="Il tuo aiutante"></button></div>
-  <button class="fab" id="addBtn"><svg viewBox="0 0 24 24" fill="none"><path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12z" fill="#fff"/><path d="M12 7v6M9 10h6" stroke="#ff5b3a" stroke-width="2" stroke-linecap="round"/></svg>L'ho messo QUAPP</button>
+  <button class="fab" id="addBtn"><svg viewBox="0 0 24 24" fill="none"><path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12z" fill="#fff"/><path d="M12 7v6M9 10h6" stroke="#6f3ff0" stroke-width="2" stroke-linecap="round"/></svg>L'ho messo QUAPP</button>
 </div>
 
 <div class="scrim" id="scrim"></div>
