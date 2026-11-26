@@ -92,7 +92,11 @@ main{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 .empty svg{width:110px;height:110px}
 .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:max(18px,env(safe-area-inset-bottom,0px));z-index:6;height:60px;padding:0 26px 0 20px;border-radius:30px;border:0;background:var(--cherry);color:#fff;font:700 18px "Plus Jakarta Sans",system-ui,sans-serif;display:flex;align-items:center;gap:10px;box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 8px 18px -10px rgba(70,32,170,.42);white-space:nowrap}
 .fab:active{transform:translateX(-50%) translateY(2px)}
-.fab svg{width:22px;height:22px}
+.fab svg{width:22px;height:22px;flex:none}
+.fab{transition:padding .25s,gap .25s}
+.fabt{display:inline-block;max-width:220px;overflow:hidden;white-space:nowrap;transition:max-width .25s,opacity .2s}
+.fab.mini{padding:0 18px;gap:0}
+.fab.mini .fabt{max-width:0;opacity:0}
 .btn{height:50px;padding:0 20px;border-radius:25px;border:0;background:var(--blush);font-weight:600;color:var(--ink)}
 .btn.main{background:var(--cherry);color:#fff;box-shadow:0 1px 0 rgba(255,255,255,.3) inset,0 5px 12px -8px rgba(70,32,170,.4)}
 .btn.danger{background:none;color:#d1344a;box-shadow:inset 0 0 0 1.5px #d1344a}
@@ -241,7 +245,7 @@ select.field{appearance:none;-webkit-appearance:none;background:var(--card) url(
   </div></header>
   <main class="wrap" id="list"></main>
   <div class="pet" id="pet"><div class="say hide" id="petSay"></div><div class="panel hide" id="petPanel"></div><button class="petbody" id="petBody" aria-label="Il tuo aiutante"></button></div>
-  <button class="fab" id="addBtn"><svg viewBox="0 0 24 24" fill="none"><path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12z" fill="#fff"/><path d="M12 7v6M9 10h6" stroke="#6f3ff0" stroke-width="2" stroke-linecap="round"/></svg>L'ho messo QUAPP</button>
+  <button class="fab" id="addBtn"><svg viewBox="0 0 24 24" fill="none"><path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12z" fill="#fff"/><path d="M12 7v6M9 10h6" stroke="#6f3ff0" stroke-width="2" stroke-linecap="round"/></svg><span class="fabt">L'ho messo QUAPP</span></button>
 </div>
 
 <div class="scrim" id="scrim"></div>
@@ -567,6 +571,8 @@ $('#edit').addEventListener('submit',async e=>{e.preventDefault();draft.name=$('
  try{await store.put(it.id,await seal(key,it));items=items.filter(x=>x.id!==it.id).concat(it);closeSheets();filter='all';render();petSay(isNew?"Segnato! L'hai messo QUAPP. Il te del futuro ringrazia.":'Trasloco registrato. Me lo ricordo io.','happy','hop',4200)}
  catch(err){toast(err&&err.code==='quota_exceeded'?'Cassaforte piena: elimina qualcosa':'Non riesco a salvare ora. Riprova.')}
  finally{b.disabled=false;b.textContent=isNew?'Salva':'Salva modifiche'}});
+{let lastY=0;$('#app').addEventListener('scroll',()=>{const y=$('#app').scrollTop,f=$('#addBtn');if(y>60&&y>lastY+4)f.classList.add('mini');else if(y<lastY-4||y<=60)f.classList.remove('mini');lastY=y},{passive:true})}
+$('#addBtn').setAttribute('aria-label',"L'ho messo QUAPP");
 $('#addBtn').onclick=()=>{openEdit(null);setTimeout(()=>$('#fName').focus(),320)};
 
 async function addDemo(){const d=864e5,now=Date.now();const ex=[
