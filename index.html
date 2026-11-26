@@ -117,6 +117,18 @@ textarea.field{height:84px;padding:12px 14px;resize:vertical}
 .photo span small{font-weight:400;color:var(--soft)}
 .photo svg{width:34px;height:34px}
 .cats{display:flex;flex-wrap:wrap;gap:8px}
+.pathb{border:1.5px solid var(--line);border-radius:16px;background:var(--card);padding:8px}
+.pathb:focus-within{border-color:#6f3ff0}
+.lv{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.lv:empty{display:none}
+.lv:not(:empty){margin-bottom:8px}
+.lv button{height:34px;padding:0 10px;border:0;border-radius:12px;background:var(--blush);font-size:14px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:6px}
+.lv button:last-of-type{background:var(--cherry);color:#fff}
+.lv button i{font-style:normal;opacity:.55;font-size:16px}
+.lv span{color:var(--soft);font-weight:700}
+.pin{display:flex;gap:8px}
+.pin input{flex:1;height:44px;border:0;background:none;outline:0;font-size:16px;padding:0 6px}
+.pin button{flex:none;width:44px;height:44px;border-radius:12px;border:0;background:var(--cherry);color:#fff;font-size:24px;font-weight:700;line-height:1}
 .sugg{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .sugg button{height:32px;padding:0 12px;border-radius:16px;border:1px dashed var(--line);background:none;font-size:13px;color:var(--soft)}
 .gps{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -247,8 +259,8 @@ select.field{appearance:none;-webkit-appearance:none;background:var(--card) url(
   <input class="field" id="fName" maxlength="80" placeholder="Es. il passaporto (sì, proprio quello)" autocomplete="off">
   <label class="l">Categoria</label>
   <div class="cats" id="fCats"></div>
-  <label class="l" for="fPlace">Dove <small>· dal generale al particolare, con ›</small></label>
-  <input class="field" id="fPlace" maxlength="140" placeholder="Casa › Studio › Secondo cassetto" autocomplete="off">
+  <label class="l" for="fPlace">Dove <small>· un livello alla volta, poi Invio</small></label>
+  <div class="pathb" id="pathB"><div class="lv" id="fLv"></div><div class="pin"><input id="fPlace" maxlength="40" autocomplete="off" enterkeyhint="next" placeholder="Es. Casa"><button type="button" id="lvAdd" aria-label="Aggiungi livello">›</button></div></div>
   <div class="sugg" id="fSugg"></div>
   <label class="l" for="fNote">Indizi <small>· per il te un po’ distratto di domani</small></label>
   <textarea class="field" id="fNote" maxlength="400" placeholder="Sotto i maglioni, dietro la scatola che non apri mai"></textarea>
@@ -516,7 +528,7 @@ $('#editBtn').onclick=()=>{closeSheets();setTimeout(()=>openEdit(current),180)};
 
 function openEdit(it){draft=it?{...it,gps:it.gps?{...it.gps}:null}:{name:'',cat:'doc',place:'',note:'',photo:'',gps:null};
  $('#editTitle').textContent=it?'Nuovo nascondiglio?':"Allora, dove l'hai messo?";$('#saveBtn').textContent=it?'Salva modifiche':'Salva';
- $('#fName').value=draft.name;$('#fPlace').value=draft.place;$('#fNote').value=draft.note;drawCats();drawPhoto();drawGps();drawSugg();openSheet('#edit')}
+ $('#fName').value=draft.name;draft.lv=(draft.place||'').split('›').map(x=>x.trim()).filter(Boolean);$('#fPlace').value='';drawPath();$('#fNote').value=draft.note;drawCats();drawPhoto();drawGps();openSheet('#edit')}
 function drawCats(){$('#fCats').innerHTML=CATS.map(c=>`<button type="button" class="chip ${draft.cat===c.id?'on':''}" data-c="${c.id}"><b style="background:${c.c}"></b>${c.n}</button>`).join('')}
 $('#fCats').addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(b){draft.cat=b.dataset.c;drawCats()}});
 function drawPhoto(){const has=!!draft.photo;$('#photoImg').classList.toggle('hide',!has);$('#photoDel').classList.toggle('hide',!has);$('#photoHint').classList.toggle('hide',has);if(has)$('#photoImg').src=draft.photo;else $('#photoImg').removeAttribute('src')}
@@ -526,19 +538,31 @@ window.addEventListener('focus',()=>setTimeout(()=>{picking=false},800));
 $('#photoIn').addEventListener('change',async e=>{picking=false;const f=e.target.files[0];e.target.value='';if(!f)return;try{draft.photo=await shrink(f);drawPhoto()}catch(err){toast('Questa foto non si apre')}});
 async function shrink(file){const url=URL.createObjectURL(file);try{const img=new Image();await new Promise((r,j)=>{img.onload=r;img.onerror=j;img.src=url});let max=1100,qual=.74,out='';
  for(let n=0;n<6;n++){const s=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)),c=document.createElement('canvas');c.width=Math.round(img.naturalWidth*s);c.height=Math.round(img.naturalHeight*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);out=c.toDataURL('image/jpeg',qual);if(out.length<120000)break;max*=.82;qual=Math.max(.5,qual-.06)}return out}finally{URL.revokeObjectURL(url)}}
-function drawSugg(){const seen=[...new Set(items.map(i=>i.place).filter(Boolean))].slice(0,6);const roots=[...new Set(items.flatMap(i=>{const p=(i.place||'').split('›').map(s=>s.trim()).filter(Boolean);return p.length>1?[p.slice(0,-1).join(' › ')+' › ']:[]}))].slice(0,4);
- const all=[...new Set([...roots,...seen])].slice(0,8);$('#fSugg').innerHTML=all.map(s=>`<button type="button" data-s="${esc(s)}">${esc(s.replace(/ › $/,' › …'))}</button>`).join('')}
-$('#fSugg').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;const f=$('#fPlace');f.value=b.dataset.s;f.focus();f.setSelectionRange(f.value.length,f.value.length)});
-$('#fPlace').addEventListener('input',e=>{const v=e.target.value;if(/\s>\s?$/.test(v)||/>>$/.test(v))e.target.value=v.replace(/\s?>>?\s?$/,' › ')});
+const START=['Casa','Ufficio','Auto','Cantina','Garage'],ROOMS=['Camera da letto','Studio','Cucina','Soggiorno','Ingresso','Bagno'],SPOTS=['Armadio','Cassetto','Scaffale','Scatola','Comodino','Mobile'];
+function levelSugg(){const lv=draft.lv,d=lv.length,pre=lv.map(norm).join('|'),seen=[];
+ items.forEach(i=>{const p=(i.place||'').split('›').map(x=>x.trim()).filter(Boolean);if(p.length>d&&p.slice(0,d).map(norm).join('|')===pre)seen.push(p[d])});
+ const freq={};seen.forEach(x=>freq[x]=(freq[x]||0)+1);const hist=Object.keys(freq).sort((a,b)=>freq[b]-freq[a]);
+ const def=d===0?START:(d===1&&norm(lv[0])==='casa')?ROOMS:SPOTS;
+ const used=new Set(lv.map(norm));return[...new Set([...hist,...def])].filter(x=>!used.has(norm(x))).slice(0,8)}
+function drawPath(){const lv=draft.lv;$('#fLv').innerHTML=lv.map((x,i)=>(i?'<span>›</span>':'')+`<button type="button" data-rm="${i}" aria-label="Togli ${esc(x)}">${esc(x)}<i>×</i></button>`).join('');
+ const ph=['Es. Casa','E poi? Es. Camera da letto','Ancora più preciso? Es. Armadio','Dove esattamente? Es. Ripiano alto'];$('#fPlace').placeholder=ph[Math.min(lv.length,3)];
+ $('#fSugg').innerHTML=levelSugg().map(x=>`<button type="button" data-s="${esc(x)}">+ ${esc(x)}</button>`).join('')}
+function commitLv(){const f=$('#fPlace'),v=f.value.replace(/[›>,]/g,' ').replace(/\s+/g,' ').trim();if(!v)return false;if(draft.lv.length<6)draft.lv.push(v.charAt(0).toUpperCase()+v.slice(1));f.value='';drawPath();return true}
+$('#fPlace').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();commitLv()}else if(e.key==='Backspace'&&!e.target.value&&draft.lv.length){draft.lv.pop();drawPath()}});
+$('#fPlace').addEventListener('input',e=>{if(/[,>›]$/.test(e.target.value))commitLv()});
+$('#lvAdd').addEventListener('pointerdown',e=>e.preventDefault());$('#lvAdd').onclick=()=>{commitLv();$('#fPlace').focus()};
+$('#fLv').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;draft.lv.splice(+b.dataset.rm,1);drawPath()});
+$('#fSugg').addEventListener('pointerdown',e=>e.preventDefault());
+$('#fSugg').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;commitLv();if(draft.lv.length<6)draft.lv.push(b.dataset.s);drawPath()});
 function drawGps(){$('#gpsTxt').textContent=draft.gps?`Salvata (precisione ±${Math.round(draft.gps.acc||0)} m)`:'Nessuna posizione';$('#gpsBtn').textContent=draft.gps?'Togli posizione':'Aggiungi posizione'}
 $('#gpsBtn').onclick=()=>{if(draft.gps){draft.gps=null;drawGps();return}
  if(!navigator.geolocation){$('#gpsTxt').textContent='GPS non disponibile qui.';return}
  $('#gpsTxt').textContent='Cerco la posizione…';
  navigator.geolocation.getCurrentPosition(p=>{draft.gps={lat:+p.coords.latitude.toFixed(6),lng:+p.coords.longitude.toFixed(6),acc:p.coords.accuracy};drawGps()},
   ()=>{$('#gpsTxt').textContent='In questo prototipo il browser blocca il GPS. Nell\'app vera funzionerà.'},{enableHighAccuracy:true,timeout:10000})};
-$('#edit').addEventListener('submit',async e=>{e.preventDefault();draft.name=$('#fName').value.trim();draft.place=$('#fPlace').value.trim().replace(/\s*›\s*$/,'');draft.note=$('#fNote').value.trim();
+$('#edit').addEventListener('submit',async e=>{e.preventDefault();draft.name=$('#fName').value.trim();commitLv();draft.place=draft.lv.join(' › ');draft.note=$('#fNote').value.trim();
  if(!draft.name){$('#fName').focus();toast('Ok, ma cosa hai messo via?');return}
- const now=Date.now(),isNew=!draft.id;const it={...draft,id:draft.id||('q'+now.toString(36)+Math.random().toString(36).slice(2,7)),created:draft.created||now,updated:now,example:false};
+ const now=Date.now(),isNew=!draft.id;const it={...draft,id:draft.id||('q'+now.toString(36)+Math.random().toString(36).slice(2,7)),created:draft.created||now,updated:now,example:false};delete it.lv;
  const b=$('#saveBtn');b.disabled=true;b.textContent='Cifro…';
  try{await store.put(it.id,await seal(key,it));items=items.filter(x=>x.id!==it.id).concat(it);closeSheets();filter='all';render();petSay(isNew?"Segnato! L'hai messo QUAPP. Il te del futuro ringrazia.":'Trasloco registrato. Me lo ricordo io.','happy','hop',4200)}
  catch(err){toast(err&&err.code==='quota_exceeded'?'Cassaforte piena: elimina qualcosa':'Non riesco a salvare ora. Riprova.')}
