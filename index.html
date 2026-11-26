@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>QUAPP prototipo</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -25,7 +25,8 @@ html,body{height:100%;overflow:hidden}
 #app{position:fixed;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Plus Jakarta Sans",system-ui,sans-serif;overflow-x:clip;-webkit-tap-highlight-color:transparent}
 button,input,textarea{font:inherit;color:inherit}
-button{cursor:pointer}
+button{cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+html,body,#lock,#app,.pad{touch-action:manipulation}
 h1,h2,h3{font-family:"Plus Jakarta Sans",system-ui,sans-serif;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin:0}
 .hide{display:none!important}
 .wrap{max-width:520px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left,0px));}
@@ -359,10 +360,14 @@ function lockPrompt(){pin='';dots();$('#petSay').classList.add('hide');closePane
  if(mode==='setup')msg(recovering?'Bene, sei tu. Ora scegli un PIN nuovo di 6 cifre.':(av().hello||'Ciao, sono '+av().n+'. Scegli un PIN di 6 cifre: resta tra noi.'));
  else if(mode==='confirm')msg('Ancora una volta, giusto per essere sicuri.');
  else if(mode==='unlock')msg('Psst… il PIN?');}
-$('#pad').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||mode==='load'||mode==='busy')return;const k=b.dataset.k;
+$('#pad').addEventListener('dblclick',e=>e.preventDefault());
+let lastTouch=0;
+$('#pad').addEventListener('touchend',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;e.preventDefault();lastTouch=Date.now();padKey(b)},{passive:false});
+$('#pad').addEventListener('click',e=>{if(Date.now()-lastTouch<600)return;const b=e.target.closest('button');if(b)padKey(b)});
+function padKey(b){if(mode==='load'||mode==='busy')return;const k=b.dataset.k;
  if(k==='del'){pin=pin.slice(0,-1);spin(-40);dots();if(!pin.length)drawLockAva('idle');return}
  if(k==='reset'){mode='setup';first=null;lockPrompt();return}
- if(pin.length>=6)return;pin+=k;spin(40);dots();if(pin.length===1){drawLockAva('shy');if(mode==='unlock')msg(av().shy||'Non guardo, giuro.')}if(pin.length===6)setTimeout(submitPin,150)});
+ if(pin.length>=6)return;pin+=k;spin(40);dots();if(pin.length===1){drawLockAva('shy');if(mode==='unlock')msg(av().shy||'Non guardo, giuro.')}if(pin.length===6)setTimeout(submitPin,150)}
 document.addEventListener('keydown',e=>{if($('#lock').classList.contains('hide')||e.target.matches('input,textarea'))return;if(/^\d$/.test(e.key))document.querySelector(`#pad [data-k="${e.key}"]`)?.click();if(e.key==='Backspace')document.querySelector('#pad [data-k="del"]').click()});
 async function submitPin(){
  if(mode==='setup'){first=pin;mode='confirm';lockPrompt();drawLockAva('happy');return}
