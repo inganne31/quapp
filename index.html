@@ -34,16 +34,16 @@ h1,h2,h3{font-family:"Plus Jakarta Sans",system-ui,sans-serif;font-weight:800;le
 .brand{display:flex;align-items:center;gap:6px;font-family:"Plus Jakarta Sans",system-ui,sans-serif;font-weight:800;font-size:26px;letter-spacing:-.04em;color:var(--ink)}
 .brand svg{width:24px;height:24px}
 /* lock */
-#lock{position:fixed;inset:0;z-index:50;background:linear-gradient(180deg,#fcfaff 0%,#ece5ff 100%);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px 16px calc(24px + env(safe-area-inset-bottom,0px));overflow:hidden}
+#lock{position:fixed;inset:0;z-index:50;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:safe center;gap:clamp(8px,1.8svh,16px);padding:max(16px,env(safe-area-inset-top,0px)) 16px max(16px,env(safe-area-inset-bottom,0px));overflow-x:hidden;overflow-y:auto}
 #lock::before,#lock::after{content:"";position:absolute;z-index:-1}
 #lock::before{width:520px;height:520px;left:50%;top:50%;transform:translate(-50%,-78%);border-radius:50%;background:radial-gradient(circle,rgba(140,100,255,.14) 0%,rgba(140,100,255,0) 62%)}
 #lock::after{display:none}
 #lock{isolation:isolate}
-.tagline{margin:-8px 0 0;font-size:15px;font-weight:600;color:var(--soft)}
+.tagline{margin:-4px 0 0;font-size:15px;font-weight:600;color:var(--soft)}
 #lock .brand{font-size:30px}
 #lockMsg{min-height:48px;text-align:center;font-size:16px;max-width:300px;margin:0}
 #lockMsg.err{color:#b3142a;font-weight:700}
-.dial{position:relative;width:min(230px,58vw);aspect-ratio:1}
+.dial{position:relative;flex:none;width:min(230px,58vw,27svh);aspect-ratio:1}
 .dial svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 #ticks{transform-origin:120px 120px;transition:transform .45s cubic-bezier(.3,1.5,.5,1)}
 .dots{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:9px}
@@ -51,8 +51,8 @@ h1,h2,h3{font-family:"Plus Jakarta Sans",system-ui,sans-serif;font-weight:800;le
 .dots i.on{background:#6f3ff0;border-color:#6f3ff0;transform:scale(1.15)}
 .shake{animation:shake .45s}
 @keyframes shake{20%,60%{transform:translateX(-9px) rotate(-3deg)}40%,80%{transform:translateX(9px) rotate(3deg)}}
-.pad{display:grid;grid-template-columns:repeat(3,70px);gap:12px 22px}
-.pad button{height:70px;border-radius:50%;border:1px solid var(--line);background:linear-gradient(180deg,#fff 0%,#f8f5ff 100%);font:700 26px "Plus Jakarta Sans",system-ui,sans-serif;color:var(--ink);box-shadow:var(--glow)}
+.pad{display:grid;grid-template-columns:repeat(3,min(70px,8.6svh));gap:clamp(8px,1.4svh,12px) 22px;flex:none}
+.pad button{height:min(70px,8.6svh);font-size:clamp(20px,3svh,26px)!important;border-radius:50%;border:1px solid var(--line);background:linear-gradient(180deg,#fff 0%,#f8f5ff 100%);font:700 26px "Plus Jakarta Sans",system-ui,sans-serif;color:var(--ink);box-shadow:var(--glow)}
 .pad button:active{transform:translateY(2px);background:var(--cherry);border-color:#5328cc;color:#fff}
 .pad button.ghost{background:none;box-shadow:none;font-size:15px;font-weight:600}
 .pad button:disabled{opacity:.35}
@@ -174,7 +174,7 @@ textarea.field{height:84px;padding:12px 14px;resize:vertical}
 .fab:active{transform:translateY(2px)!important}
 .buddy{display:flex;align-items:flex-end;gap:10px;max-width:340px;width:100%}
 .ava{flex:none;width:64px;height:64px}
-#lockAva{width:84px;height:84px}
+#lockAva{width:min(84px,10svh);height:min(84px,10svh)}
 #lock .buddy{max-width:360px}
 .ava svg{width:100%;height:100%;display:block;animation:bob 3.2s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-3px)}}
