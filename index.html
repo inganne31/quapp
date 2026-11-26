@@ -29,6 +29,7 @@ button{cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-se
 html,body,#lock,#app,.pad{touch-action:manipulation}
 h1,h2,h3{font-family:"Plus Jakarta Sans",system-ui,sans-serif;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin:0}
 .hide{display:none!important}
+.invis{visibility:hidden!important}
 .wrap{max-width:520px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left,0px));}
 .brand{display:flex;align-items:center;gap:6px;font-family:"Plus Jakarta Sans",system-ui,sans-serif;font-weight:800;font-size:26px;letter-spacing:-.04em;color:var(--ink)}
 .brand svg{width:24px;height:24px}
@@ -356,7 +357,7 @@ const msg=(t,err)=>{const m=$('#lockMsg');m.textContent=t;m.classList.toggle('er
 const spin=d=>{rot+=d;$('#ticks').style.transform=`rotate(${rot}deg)`};
 const shake=()=>{const d=$('#dial');d.classList.remove('shake');void d.offsetWidth;d.classList.add('shake')};
 const padOn=on=>document.querySelectorAll('#pad button').forEach(b=>b.disabled=!on);
-function lockPrompt(){pin='';dots();$('#petSay').classList.add('hide');closePanel();$('#resetK').classList.toggle('hide',mode!=='confirm');drawLockAva('idle');
+function lockPrompt(){pin='';dots();$('#petSay').classList.add('hide');closePanel();$('#resetK').classList.toggle('invis',mode!=='confirm');drawLockAva('idle');
  $('#forgotBtn').classList.toggle('hide',mode!=='unlock');
  if(mode==='setup')msg(recovering?'Bene, sei tu. Ora scegli un PIN nuovo di 6 cifre.':(av().hello||'Ciao, sono '+av().n+'. Scegli un PIN di 6 cifre: resta tra noi.'));
  else if(mode==='confirm')msg('Ancora una volta, giusto per essere sicuri.');
