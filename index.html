@@ -180,22 +180,23 @@ textarea.field{height:84px;padding:12px 14px;resize:vertical}
 .eye{transform-box:fill-box;transform-origin:center;transition:transform .12s}
 .blink .eye{transform:scaleY(.1)}
 .pp{transform:translate(calc(var(--ox,0px) + var(--tx,0px)),calc(var(--oy,0px) + var(--ty,0px)));transition:transform .15s}
-.pet{position:fixed;z-index:7;right:max(26px,calc((100vw - 520px)/2 + 26px));bottom:max(20px,calc(env(safe-area-inset-bottom,0px) + 8px))}
-.petbody{display:block;width:84px;height:84px;padding:0;border:0;background:none;filter:drop-shadow(0 6px 8px rgba(70,32,170,.18))}
+:root{--edge:22px;--fabB:max(22px,calc(env(safe-area-inset-bottom,0px) + 10px))}
+.pet{position:fixed;z-index:7;right:max(var(--edge),calc((100vw - 520px)/2 + var(--edge)));bottom:calc(var(--fabB) - 10px)}
+.petbody{display:block;width:80px;height:80px;padding:0;border:0;background:none;filter:drop-shadow(0 6px 8px rgba(70,32,170,.18))}
 .petbody svg{width:100%;height:100%;display:block;animation:bob 3.2s ease-in-out infinite}
 .pet.hop .petbody{animation:hop .6s cubic-bezier(.3,1.6,.5,1)}
 .pet.wig .petbody{animation:wig .45s}
 @keyframes hop{35%{transform:translateY(-22px) rotate(-8deg) scale(1.06)}70%{transform:translateY(0) scale(.97,1.04)}}
 @keyframes wig{25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
-.say{position:absolute;right:8px;bottom:92px;width:max-content;max-width:min(260px,calc(100vw - 40px));background:var(--card);border:1px solid var(--line);border-radius:18px 18px 6px 18px;padding:10px 14px;font-size:15px;line-height:1.4;box-shadow:0 10px 24px -12px rgba(70,32,170,.35);animation:pop .3s cubic-bezier(.3,1.5,.5,1);transform-origin:bottom right}
+.say{position:absolute;right:8px;bottom:88px;width:max-content;max-width:min(260px,calc(100vw - 40px));background:var(--card);border:1px solid var(--line);border-radius:18px 18px 6px 18px;padding:10px 14px;font-size:15px;line-height:1.4;box-shadow:0 10px 24px -12px rgba(70,32,170,.35);animation:pop .3s cubic-bezier(.3,1.5,.5,1);transform-origin:bottom right}
 @keyframes pop{from{transform:scale(.6);opacity:0}}
-.panel{position:absolute;right:4px;bottom:92px;width:min(340px,calc(100vw - 28px));max-height:min(70vh,520px);overflow-y:auto;background:var(--bg);border:1px solid var(--line);border-radius:22px 22px 6px 22px;padding:14px;box-shadow:0 18px 40px -16px rgba(70,32,170,.45);animation:pop .3s cubic-bezier(.3,1.5,.5,1);transform-origin:bottom right}
+.panel{position:absolute;right:4px;bottom:88px;width:min(340px,calc(100vw - 28px));max-height:min(70vh,520px);overflow-y:auto;background:var(--bg);border:1px solid var(--line);border-radius:22px 22px 6px 22px;padding:14px;box-shadow:0 18px 40px -16px rgba(70,32,170,.45);animation:pop .3s cubic-bezier(.3,1.5,.5,1);transform-origin:bottom right}
 .panel .bubble{margin:0 0 10px}
 .panel .ans{margin:10px 0 0;width:100%}
 .panel .also{margin:8px 0 0}
 .panel .links{margin-top:12px}
 .panel .links .btn{height:40px;font-size:14px;padding:0 14px}
-.fab{left:max(16px,calc((100vw - 520px)/2 + 16px))!important;transform:none!important}
+.fab{left:max(var(--edge),calc((100vw - 520px)/2 + var(--edge)))!important;bottom:var(--fabB)!important;transform:none!important}
 .fab:active{transform:translateY(2px)!important}
 .buddy{display:flex;align-items:flex-end;gap:10px;max-width:340px;width:100%}
 .ava{flex:none;width:64px;height:64px}
@@ -544,7 +545,7 @@ const ago=ts=>{const d=(Date.now()-ts)/864e5,t=agoRaw(ts);return d>365?t+', pove
 const short=ts=>{const d=(Date.now()-ts)/864e5;if(d<1)return'oggi';if(d<30)return Math.floor(d)+' g';const m=Math.floor(d/30.44);if(m<12)return m===1?'1 mese':m+' mesi';const y=Math.floor(m/12);return y===1?'1 anno':y+' anni'};
 const fmtDate=ts=>new Date(ts).toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'});
 const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-const BUILD='2026-11-27-2115';const VER='versione 27/11 · 21:15';
+const BUILD='2026-11-27-2120';const VER='versione 27/11 · 21:20';
 const footTxt=()=>VER+' · '+(store.where==='cloud'?'Cifrato col tuo PIN. Nemmeno noi sappiamo dove hai messo le cose.':store.where==='local'?'Cifrato e salvato solo su questo telefono, in questo browser.':'Attenzione: questo browser non permette di salvare. Quando chiudi la pagina, sparisce tutto.');
 function render(){
  const counts={};items.forEach(i=>counts[i.cat]=(counts[i.cat]||0)+1);
