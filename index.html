@@ -157,8 +157,17 @@ textarea.field{height:84px;padding:12px 14px;resize:vertical}
 .remind{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;margin-top:18px;border-radius:25px;border:1.5px dashed #c9b8f7;background:var(--card);color:#6f3ff0;font-weight:700;font-size:16px}
 .remind svg{width:20px;height:20px}
 .remind.set{border-style:solid;background:#f1ecfc}
-.rembox{margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:20px;background:var(--card)}
-.rembox .bubble{margin:0 0 12px;box-shadow:none;background:#f6f2ff}
+.rembox{margin-top:12px;padding:12px;overflow:hidden;border:1px solid var(--line);border-radius:20px;background:var(--card)}
+.rembox .bubble{margin:10px 0 0;box-shadow:none;background:#f6f2ff;font-size:14px}
+.rl{margin:2px 0 6px;font-size:13px;font-weight:700;color:var(--soft)}
+.rl+.opts{margin-bottom:8px}
+.opts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.opts button{height:40px;padding:0 2px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.opts button.on{background:var(--cherry);border-color:transparent;color:#fff}
+.field.mini{display:block;width:100%;max-width:100%;min-width:0;height:44px;margin:0 0 10px;-webkit-appearance:none;appearance:none;text-align:left}
+.remsum{display:flex;align-items:center;gap:10px;margin-top:4px;padding:12px;border-radius:14px;background:#f1ecfc;color:#5328cc}
+.remsum svg{width:22px;height:22px;flex:none}
+.remsum b{font-size:16px;line-height:1.3;color:var(--ink)}
 .chk{display:flex;gap:10px;align-items:flex-start;margin-top:12px;font-size:14px;font-weight:600;line-height:1.35}
 .chk input{width:20px;height:20px;margin:0;flex:none;accent-color:#6f3ff0}
 .chk small{display:block;font-weight:400;color:var(--soft)}
@@ -286,11 +295,16 @@ select.field{appearance:none;-webkit-appearance:none;background:var(--card) url(
 <div class="sheet" id="detail"><div class="grab"></div><div id="dBody"></div>
   <button class="remind" id="remBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span id="remLbl">Ricordamelo</span></button>
   <div class="rembox hide" id="remBox">
+    <p class="rl">Quando</p>
+    <div class="opts" id="remWhen"><button type="button" data-d="1">Domani</button><button type="button" data-m="1">1 mese</button><button type="button" class="on" data-m="6">6 mesi</button><button type="button" data-m="12">1 anno</button><button type="button" data-pick="d">Altro…</button></div>
+    <input type="date" class="field mini hide" id="remDate">
+    <p class="rl">A che ora</p>
+    <div class="opts" id="remAt"><button type="button" class="on" data-t="09:00">9:00</button><button type="button" data-t="13:00">13:00</button><button type="button" data-t="18:00">18:00</button><button type="button" data-t="21:00">21:00</button><button type="button" data-pick="t">Altro…</button></div>
+    <input type="time" class="field mini hide" id="remTime" value="09:00">
+    <div class="remsum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><b id="remWhenTxt"></b></div>
     <p class="bubble" id="remSay"></p>
-    <div class="cats" id="remWhen"><button type="button" class="chip" data-m="1">Tra 1 mese</button><button type="button" class="chip on" data-m="6">Tra 6 mesi</button><button type="button" class="chip" data-m="12">Tra 1 anno</button><button type="button" class="chip" data-m="0">Scelgo io</button></div>
-    <input type="date" class="field hide" id="remDate" style="margin-top:10px">
     <label class="chk"><input type="checkbox" id="remHide"><span>Non scrivere dove si trova<small>Il promemoria dirà solo di aprire QUAPP.</small></span></label>
-    <button class="btn main" id="remGo" style="width:100%;margin-top:12px">Aggiungi al Calendario</button>
+    <button class="btn main" id="remGo" style="width:100%;margin-top:12px">Conferma nel Calendario</button>
     <p class="hint" id="remNote"></p>
   </div>
   <div class="row"><button class="btn danger" id="delBtn">Elimina</button><button class="btn main" id="editBtn">L’ho spostato</button></div>
@@ -548,26 +562,32 @@ let delArm=null;function resetDel(){clearTimeout(delArm);delArm=null;const b=$('
 $('#delBtn').onclick=async()=>{const b=$('#delBtn');if(!delArm){b.textContent='Davvero? Tocca ancora';b.classList.add('sure');delArm=setTimeout(resetDel,3000);return}
  const id=current.id,gone=current;resetDel();try{await store.del(id);items=items.filter(x=>x.id!==id);closeSheets();render();petSay('Addio, '+gone.name+'. Sparito, come le cose prima di QUAPP.','sad','wig',4200)}catch(e){toast('Non riesco a eliminarlo ora')}};
 /* ---------- promemoria nel Calendario ---------- */
-let remMonths=6;
+let remMode={m:6},remT='09:00';
 const REM={cat:(n,p)=>`Ciccio qui. Mi hai chiesto di ricordarti: ${n}. ${p} Io resto sul divano.`,
  uni:(n,p)=>`Brillantina ti ricorda con affetto: ${n}. ${p}`,
  fish:(n,p)=>`Pinna qui! Avevo una cosa importantissima da dirti… ah sì: ${n}! ${p} Visto? Me lo sono ricordato! …Cioè, QUAPP.`};
 function remText(i,hide){const pl=(i.place||'').split('›').map(x=>x.trim()).filter(Boolean).join(' › ');const p=hide||!pl?'Apri QUAPP per vedere dove l’hai messo.':`È in ${pl}.`;return(REM[(meta&&meta.avatar)||'cat']||REM.cat)(i.name,p)}
-function remReset(i){$('#remBox').classList.add('hide');$('#remBtn').classList.toggle('set',!!i.rem);$('#remLbl').textContent=i.rem?'Promemoria il '+new Date(i.rem).toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'})+' · cambia':'Ricordamelo'}
-function remDate(){if(remMonths){const d=new Date();d.setMonth(d.getMonth()+remMonths);return d}const v=$('#remDate').value;return v?new Date(v+'T09:00:00'):null}
-function remPreview(){const d=remDate();$('#remSay').textContent=d?remText(current,$('#remHide').checked):'Scegli una data.';}
+const fmtWhen=d=>{const t=d.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});return t.charAt(0).toUpperCase()+t.slice(1)+', alle '+d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})};
+function remReset(i){$('#remBox').classList.add('hide');$('#remBtn').classList.toggle('set',!!i.rem);$('#remLbl').textContent=i.rem?'Promemoria: '+new Date(i.rem).toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'})+' alle '+new Date(i.rem).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})+' · cambia':'Ricordamelo'}
+function remDate(){let d;if(remMode.pick){const v=$('#remDate').value;if(!v)return null;d=new Date(v+'T00:00:00')}else{d=new Date();d.setHours(0,0,0,0);if(remMode.d)d.setDate(d.getDate()+remMode.d);else d.setMonth(d.getMonth()+remMode.m)}
+ const[h,mi]=(remT||'09:00').split(':').map(Number);d.setHours(h||0,mi||0,0,0);return d}
+function remPreview(){const d=remDate();$('#remWhenTxt').textContent=d?fmtWhen(d):'Scegli il giorno';$('#remSay').textContent=remText(current,$('#remHide').checked);$('#remGo').disabled=!d||d<new Date()}
 $('#remBtn').onclick=()=>{const b=$('#remBox');if(!b.classList.contains('hide')){b.classList.add('hide');return}b.classList.remove('hide');
  const t=new Date();t.setDate(t.getDate()+1);$('#remDate').min=t.toISOString().slice(0,10);
  $('#remNote').textContent=window.self!==window.top?'Da qui il Calendario non si apre: usa QUAPP dall’icona nella Home o da inganne31.github.io/quapp.':'Il testo del promemoria finisce nel Calendario dell’iPhone, fuori dalla cassaforte.';
  remPreview();setTimeout(()=>b.scrollIntoView({behavior:'smooth',block:'nearest'}),50)};
-$('#remWhen').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;remMonths=+b.dataset.m;document.querySelectorAll('#remWhen .chip').forEach(x=>x.classList.toggle('on',x===b));$('#remDate').classList.toggle('hide',remMonths!==0);remPreview()});
-$('#remDate').addEventListener('change',remPreview);$('#remHide').addEventListener('change',remPreview);
+$('#remWhen').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;document.querySelectorAll('#remWhen button').forEach(x=>x.classList.toggle('on',x===b));
+ remMode=b.dataset.pick?{pick:1}:b.dataset.d?{d:+b.dataset.d}:{m:+b.dataset.m};$('#remDate').classList.toggle('hide',!remMode.pick);remPreview()});
+$('#remAt').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;document.querySelectorAll('#remAt button').forEach(x=>x.classList.toggle('on',x===b));
+ if(b.dataset.pick){$('#remTime').classList.remove('hide');remT=$('#remTime').value||'09:00'}else{$('#remTime').classList.add('hide');remT=b.dataset.t}remPreview()});
+$('#remTime').addEventListener('input',e=>{remT=e.target.value||'09:00';remPreview()});
+$('#remDate').addEventListener('input',remPreview);$('#remHide').addEventListener('change',remPreview);
 const icsEsc=t=>String(t).replace(/\\/g,'\\\\').replace(/;/g,'\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n');
 const fold=l=>{const out=[];let cur='';for(const ch of l){if(enc8.encode(cur+ch).length>73){out.push(cur);cur=' '+ch}else cur+=ch}out.push(cur);return out.join('\r\n')};
-const ymd=d=>d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
-$('#remGo').onclick=async()=>{const d=remDate();if(!d){toast('Scegli una data');return}const i=current,txt=remText(i,$('#remHide').checked),e=new Date(d);e.setDate(e.getDate()+1);
+const p2=n=>String(n).padStart(2,'0');const lt=d=>d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'T'+p2(d.getHours())+p2(d.getMinutes())+'00';
+$('#remGo').onclick=async()=>{const d=remDate();if(!d){toast('Scegli il giorno');return}if(d<new Date()){toast('Quel momento è già passato');return}const i=current,txt=remText(i,$('#remHide').checked),e=new Date(d.getTime()+15*60000);
  const stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');
- const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//QUAPP//IT','CALSCALE:GREGORIAN','METHOD:PUBLISH','BEGIN:VEVENT','UID:'+i.id+'-'+Date.now()+'@quapp','DTSTAMP:'+stamp,'DTSTART;VALUE=DATE:'+ymd(d),'DTEND;VALUE=DATE:'+ymd(e),'SUMMARY:'+icsEsc('QUAPP · '+i.name),'DESCRIPTION:'+icsEsc(txt),'BEGIN:VALARM','ACTION:DISPLAY','TRIGGER:PT9H','DESCRIPTION:'+icsEsc(txt),'END:VALARM','END:VEVENT','END:VCALENDAR'].map(fold).join('\r\n')+'\r\n';
+ const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//QUAPP//IT','CALSCALE:GREGORIAN','METHOD:PUBLISH','BEGIN:VEVENT','UID:'+i.id+'-'+Date.now()+'@quapp','DTSTAMP:'+stamp,'DTSTART:'+lt(d),'DTEND:'+lt(e),'SUMMARY:'+icsEsc('QUAPP · '+i.name),'DESCRIPTION:'+icsEsc(txt),'BEGIN:VALARM','ACTION:DISPLAY','TRIGGER:-PT0M','DESCRIPTION:'+icsEsc(txt),'END:VALARM','END:VEVENT','END:VCALENDAR'].map(fold).join('\r\n')+'\r\n';
  const url=URL.createObjectURL(new Blob([ics],{type:'text/calendar;charset=utf-8'}));
  try{const a=document.createElement('a');a.href=url;a.download='quapp-promemoria.ics';document.body.appendChild(a);a.click();a.remove()}catch(err){location.href=url}
  setTimeout(()=>URL.revokeObjectURL(url),60000);
